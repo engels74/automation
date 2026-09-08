@@ -1,0 +1,81 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: PR number for a repair dispatch
+        type: string
+        default: ''
+      expected-head-sha:
+        description: Exact repaired PR commit
+        type: string
+        default: ''
+      expected-default-sha:
+        description: Exact default-branch commit requested after a checked merge
+        type: string
+        default: ''
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./actions/dispatch-guard
+        with:
+          token: ${{ github.token }}
+          pr-number: ${{ inputs.pr-number }}
+          expected-head-sha: ${{ inputs.expected-head-sha }}
+          expected-default-sha: ${{ inputs.expected-default-sha }}
+      - uses: oven-sh/setup-bun@v2.2.0
+        with:
+          bun-version: 1.4.2
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24.20.0
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run prepare:native
+      - run: bun run validate:renovate
+      - uses: actions/setup-go@v7.0.0
+        with:
+          go-version: '1.27.1'
+          cache: false
+      - name: Validate workflows
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - run: git diff --exit-code HEAD
+  tests:
+    uses: ./.github/workflows/bun.yml
+    with:
+      # renovate: datasource=npm depName=bun
+      version: 1.4.2
+      command: bun run prepare:native && bun run test
+  required:
+    name: ci / required
+    needs: [validate, tests]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./actions/dispatch-guard
+        with:
+          token: ${{ github.token }}
+          pr-number: ${{ inputs.pr-number }}
+          expected-head-sha: ${{ inputs.expected-head-sha }}
+          expected-default-sha: ${{ inputs.expected-default-sha }}
+      - uses: ./actions/gate
+        with:
+          needs: ${{ toJSON(needs) }}
+          required: validate tests

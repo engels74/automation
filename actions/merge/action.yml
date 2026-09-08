@@ -1,0 +1,14 @@
+name: Checked PR merge
+description: Validate a current merge request against trusted policy and exact-commit CI.
+inputs:
+  token:
+    description: Repository token with contents, pull requests, issues and Actions write access.
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        AUTOMATION_OWNER: engels74
+      run: python3 "$GITHUB_ACTION_PATH/merge.py"

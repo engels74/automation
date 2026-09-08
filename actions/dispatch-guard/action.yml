@@ -1,0 +1,25 @@
+name: Validate dispatched CI head
+description: Fail if explicitly dispatched CI is not testing the current requested PR commit.
+inputs:
+  pr-number:
+    description: Required for repair dispatches; empty for ordinary PR/push runs.
+    default: ''
+  expected-head-sha:
+    description: Exact commit the repair workflow requested.
+    default: ''
+  expected-default-sha:
+    description: Exact default-branch commit requested after a checked merge.
+    default: ''
+  token:
+    description: Repository read token.
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        EXPECTED_HEAD: ${{ inputs.expected-head-sha }}
+        EXPECTED_DEFAULT: ${{ inputs.expected-default-sha }}
+      run: python3 "$GITHUB_ACTION_PATH/guard.py"

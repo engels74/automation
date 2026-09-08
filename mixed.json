@@ -1,0 +1,11 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Separate independently tested ecosystems in mixed-stack repositories.",
+  "packageRules": [
+    {"matchManagers": ["bun", "npm"], "matchUpdateTypes": ["minor", "patch"], "matchPackageNames": ["!typescript", "!@biomejs/biome", "!@j178/prek"], "groupName": "javascript non-major"},
+    {"matchManagers": ["pep621", "pip_requirements", "pip_setup", "pip_setupcfg"], "matchUpdateTypes": ["minor", "patch"], "matchPackageNames": ["!prek"], "groupName": "python non-major"},
+    {"matchManagers": ["cargo"], "matchUpdateTypes": ["minor", "patch"], "groupName": "rust non-major"},
+    {"matchManagers": ["gradle", "gradle-wrapper"], "matchUpdateTypes": ["minor", "patch"], "groupName": "android non-major"},
+    {"matchManagers": ["swift", "xcodegen"], "matchUpdateTypes": ["minor", "patch"], "groupName": "apple non-major"}
+  ]
+}

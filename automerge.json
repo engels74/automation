@@ -1,0 +1,94 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Request checked merges for eligible updates after CI and dependency approvals.",
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest",
+        "lockFileMaintenance"
+      ],
+      "automerge": true
+    },
+    {
+      "matchCurrentVersion": "/^v?0\\./",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "dependencyDashboardApproval": true,
+      "groupName": null
+    },
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "groupName": null
+    },
+    {
+      "matchPackageNames": [
+        "typescript",
+        "vitest",
+        "@vitest/**",
+        "pytest",
+        "playwright",
+        "@playwright/test"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": true
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "actions/checkout",
+        "actions/setup-node",
+        "actions/setup-python",
+        "actions/setup-go",
+        "actions/setup-java",
+        "actions/cache",
+        "actions/upload-artifact",
+        "actions/download-artifact",
+        "oven-sh/setup-bun",
+        "astral-sh/setup-uv"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": true
+    },
+    {
+      "matchPackageNames": [
+        "@biomejs/biome",
+        "ruff"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "automerge": true
+    },
+    {
+      "matchManagers": [
+        "renovate-config"
+      ],
+      "automerge": false
+    },
+    {
+      "matchPackageNames": [
+        "engels74/automation"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
+    }
+  ]
+}

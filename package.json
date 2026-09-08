@@ -1,0 +1,15 @@
+{
+  "name": "@engels74/automation",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "packageManager": "bun@1.4.2",
+  "scripts": {
+    "test": "node -e \"require('re2')\" && python3 -m unittest discover -s tests -v && node tests/renovate.mjs",
+    "validate:renovate": "node -e \"require('re2')\" && renovate-config-validator --strict default.json automerge.json mixed.json renovate.json",
+    "prepare:native": "npm rebuild re2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12",
+    "renovate": "44.69.3"
+  }
+}

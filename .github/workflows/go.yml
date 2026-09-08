@@ -1,0 +1,50 @@
+name: Go validation
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: Explicit repository-owned validation command; must not be empty.
+        type: string
+        required: true
+      version:
+        description: Pinned runtime version from the caller toolchain configuration.
+        type: string
+        required: true
+      working-directory:
+        type: string
+        default: .
+      runner:
+        type: string
+        default: ubuntu-24.04
+      timeout-minutes:
+        type: number
+        default: 30
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate inputs
+        env:
+          CHECK_COMMAND: ${{ inputs.command }}
+          RUNTIME_VERSION: ${{ inputs.version }}
+        run: test -n "$CHECK_COMMAND" && test -n "$RUNTIME_VERSION"
+      - uses: actions/setup-go@v7.0.0
+        with:
+          go-version: ${{ inputs.version }}
+          cache-dependency-path: '${{ inputs.working-directory }}/go.sum'
+      - name: Run required check
+        env:
+          CHECK_COMMAND: ${{ inputs.command }}
+        run: bash --noprofile --norc -e -o pipefail -c "$CHECK_COMMAND"
+      - name: Reject tracked-file mutation
+        run: git diff --exit-code HEAD
