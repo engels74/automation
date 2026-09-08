@@ -1,0 +1,106 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Versioned dependency updates with explicit CI-checked merge requests.",
+  "extends": [
+    "config:recommended",
+    ":configMigration",
+    "group:allNonMajor",
+    "customManagers:biomeVersions"
+  ],
+  "automerge": false,
+  "automergeType": "pr-comment",
+  "platformAutomerge": false,
+  "ignoreTests": false,
+  "rebaseWhen": "behind-base-branch",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "timezone": "Europe/Berlin",
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 9am on monday"
+    ]
+  },
+  "pre-commit": {
+    "enabled": true
+  },
+  "customManagers": [
+    {
+      "customType": "jsonata",
+      "fileFormat": "toml",
+      "managerFilePatterns": [
+        "/(^|/)prek\\.toml$/"
+      ],
+      "matchStrings": [
+        "repos[$exists(rev) and $contains(repo, /^https:\\/\\/github\\.com\\//)].{\"depName\": $replace($substringAfter(repo, \"https://github.com/\"), /\\.git$/, \"\"), \"currentValue\": rev, \"datasource\": \"github-tags\"}"
+      ]
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)\\.github/workflows/[^/]+\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\s]+)\\s+(?:version|default|prek-version): [\\x27\\x22]?(?<currentValue>v?\\d+\\.\\d+\\.\\d+(?:-[\\w.]+)?)"
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": [
+        "npm"
+      ],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "pinDigests": false,
+      "groupName": "github-actions non-major",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ]
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "pinDigests": false
+    },
+    {
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "groupName": "typescript"
+    },
+    {
+      "matchPackageNames": [
+        "@biomejs/biome"
+      ],
+      "groupName": "biome"
+    },
+    {
+      "matchPackageNames": [
+        "prek",
+        "@j178/prek",
+        "j178/prek"
+      ],
+      "groupName": "prek"
+    },
+    {
+      "matchManagers": [
+        "renovate-config"
+      ],
+      "groupName": "shared automation policy",
+      "automerge": false
+    }
+  ],
+  "automergeComment": "/merge-when-green"
+}

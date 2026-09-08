@@ -1,0 +1,54 @@
+name: Restricted Biome repair
+description: Compute or publish an allowlisted repair for the exact Renovate PR head.
+inputs:
+  operation:
+    required: true
+    description: compute or publish
+  token:
+    required: true
+    description: Read-only for computation; repository-scoped write token only for publishing.
+  pr-number:
+    required: true
+    description: Triggering PR number.
+  expected-head:
+    required: true
+    description: Exact triggering PR commit.
+  config-files:
+    default: biome.json
+    description: Newline-separated tracked Biome configuration files.
+  source-roots:
+    default: |
+      src
+      lib
+      entrypoints
+      tests
+    description: Newline-separated source directories or files eligible for safe formatting.
+  package-directory:
+    default: .
+    description: Directory containing the installed Biome package.
+  repair-file:
+    required: true
+    description: Artifact JSON path outside the source tree.
+  ci-workflow:
+    default: ci.yml
+    description: Full CI workflow to dispatch after committing.
+outputs:
+  changed:
+    description: Whether computation produced a repair.
+    value: ${{ steps.repair.outputs.changed }}
+runs:
+  using: composite
+  steps:
+    - id: repair
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+        EXPECTED_HEAD: ${{ inputs.expected-head }}
+        CONFIG_FILES: ${{ inputs.config-files }}
+        SOURCE_ROOTS: ${{ inputs.source-roots }}
+        PACKAGE_DIRECTORY: ${{ inputs.package-directory }}
+        REPAIR_FILE: ${{ inputs.repair-file }}
+        CI_WORKFLOW: ${{ inputs.ci-workflow }}
+        OPERATION: ${{ inputs.operation }}
+      run: python3 "$GITHUB_ACTION_PATH/repair.py" "$OPERATION"

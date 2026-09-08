@@ -1,0 +1,62 @@
+name: Bun validation
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: Explicit repository-owned validation command; must not be empty.
+        type: string
+        required: true
+      version:
+        description: Pinned runtime version from the caller toolchain configuration.
+        type: string
+        required: true
+      working-directory:
+        type: string
+        default: .
+      node-version:
+        description: Node version for tools whose executables use a Node shebang.
+        type: string
+        # renovate: datasource=node-version depName=node
+        default: 24.20.0
+      runner:
+        type: string
+        default: ubuntu-24.04
+      timeout-minutes:
+        type: number
+        default: 30
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate inputs
+        env:
+          CHECK_COMMAND: ${{ inputs.command }}
+          RUNTIME_VERSION: ${{ inputs.version }}
+        run: test -n "$CHECK_COMMAND" && test -n "$RUNTIME_VERSION"
+      - uses: oven-sh/setup-bun@v2.2.0
+        with:
+          bun-version: ${{ inputs.version }}
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: ${{ inputs.node-version }}
+      - uses: actions/cache@v6.1.0
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ runner.arch }}-${{ inputs.version }}-${{ hashFiles('**/bun.lock', '**/bun.lockb') }}
+      - run: bun install --frozen-lockfile
+      - name: Run required check
+        env:
+          CHECK_COMMAND: ${{ inputs.command }}
+        run: bash --noprofile --norc -e -o pipefail -c "$CHECK_COMMAND"
+      - name: Reject tracked-file mutation
+        run: git diff --exit-code HEAD

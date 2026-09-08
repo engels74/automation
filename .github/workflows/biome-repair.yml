@@ -1,0 +1,80 @@
+name: Biome repair
+on:
+  workflow_call:
+    inputs:
+      config-files:
+        type: string
+        required: true
+      source-roots:
+        type: string
+        required: true
+      package-directory:
+        type: string
+        default: .
+      bun-version:
+        type: string
+        required: true
+permissions: {}
+jobs:
+  compute:
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.user.login == 'renovate[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'renovate/biome')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      changed: ${{ steps.repair.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2.2.0
+        with:
+          bun-version: ${{ inputs.bun-version }}
+      - uses: engels74/automation/actions/biome-repair@v1.0.1
+        id: repair
+        with:
+          operation: compute
+          token: ${{ github.token }}
+          pr-number: ${{ github.event.pull_request.number }}
+          expected-head: ${{ github.event.pull_request.head.sha }}
+          config-files: ${{ inputs.config-files }}
+          source-roots: ${{ inputs.source-roots }}
+          package-directory: ${{ inputs.package-directory }}
+          repair-file: ${{ runner.temp }}/biome-repair.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: steps.repair.outputs.changed == 'true'
+        with:
+          name: biome-repair-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/biome-repair.json
+          if-no-files-found: error
+          retention-days: 1
+  publish:
+    needs: compute
+    if: needs.compute.outputs.changed == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: read
+      actions: write
+    steps:
+      - uses: actions/download-artifact@v8.0.1
+        with:
+          name: biome-repair-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/repair
+      - uses: engels74/automation/actions/biome-repair@v1.0.1
+        with:
+          operation: publish
+          token: ${{ github.token }}
+          pr-number: ${{ github.event.pull_request.number }}
+          expected-head: ${{ github.event.pull_request.head.sha }}
+          config-files: ${{ inputs.config-files }}
+          source-roots: ${{ inputs.source-roots }}
+          repair-file: ${{ runner.temp }}/repair/biome-repair.json

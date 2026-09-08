@@ -1,0 +1,17 @@
+name: Required CI gate
+description: Require every declared prerequisite to report exact success.
+inputs:
+  needs:
+    description: JSON produced by toJSON(needs).
+    required: true
+  required:
+    description: Space-separated IDs of every mandatory prerequisite.
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        CI_NEEDS: ${{ inputs.needs }}
+        CI_REQUIRED: ${{ inputs.required }}
+      run: python3 "$GITHUB_ACTION_PATH/gate.py"
