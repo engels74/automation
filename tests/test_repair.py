@@ -22,7 +22,7 @@ guard = module('guard', 'actions/dispatch-guard/guard.py')
 HEAD = 'a' * 40
 NEW = 'b' * 40
 REPO = 'example/app'
-PR = {'state': 'open', 'draft': False, 'user': {'login': 'renovate[bot]'},
+PR = {'state': 'open', 'draft': False, 'user': {'login': 'renovate[bot]', 'id': 29139614, 'type': 'Bot'},
       'head': {'sha': HEAD, 'ref': 'renovate/biome', 'repo': {'full_name': REPO}},
       'base': {'repo': {'full_name': REPO}}}
 PAYLOAD = {'head': HEAD, 'pr': 7, 'repository': REPO, 'files': [
@@ -117,6 +117,9 @@ class RepairTests(unittest.TestCase):
     def test_only_current_same_repository_renovate_pr_is_eligible(self):
         self.assertTrue(repair.eligible(PR, REPO, HEAD))
         for change in [{'state': 'closed'}, {'draft': True}, {'user': {'login': 'someone'}},
+                       {'user': {**PR['user'], 'id': 1}},
+                       {'user': {**PR['user'], 'type': 'User'}},
+                       {'user': {'login': 'renovate[bot]'}},
                        {'head': {'sha': HEAD, 'repo': {'full_name': 'someone/fork'}}}]:
             self.assertFalse(repair.eligible({**PR, **change}, REPO, HEAD))
         self.assertFalse(repair.eligible(PR, REPO, NEW))

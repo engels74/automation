@@ -45,6 +45,8 @@ def eligible(pr, repository, expected_head):
         pr.get('state') == 'open'
         and not pr.get('draft')
         and pr.get('user', {}).get('login') == BOT
+        and pr.get('user', {}).get('id') == 29139614
+        and pr.get('user', {}).get('type') == 'Bot'
         and pr.get('head', {}).get('repo', {}).get('full_name') == repository
         and pr.get('base', {}).get('repo', {}).get('full_name') == repository
         and pr.get('head', {}).get('sha') == expected_head
