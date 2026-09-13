@@ -17,7 +17,7 @@ on:
         description: Node version for tools whose executables use a Node shebang.
         type: string
         # renovate: datasource=node-version depName=node
-        default: 24.20.0
+        default: 24.21.0
       runner:
         type: string
         default: ubuntu-24.04
