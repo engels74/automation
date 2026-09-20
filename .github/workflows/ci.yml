@@ -42,7 +42,7 @@ jobs:
           bun-version: 1.4.2
       - uses: actions/setup-node@v7.0.0
         with:
-          node-version: 24.20.0
+          node-version: 24.21.0
       - run: bun install --frozen-lockfile --ignore-scripts
       - run: bun run prepare:native
       - run: bun run validate:renovate
