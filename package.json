@@ -9,7 +9,7 @@
     "prepare:native": "npm rebuild re2"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.12",
+    "@biomejs/biome": "2.5.14",
     "renovate": "44.69.3"
   }
 }
