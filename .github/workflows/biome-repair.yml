@@ -48,7 +48,7 @@ jobs:
           source-roots: ${{ inputs.source-roots }}
           package-directory: ${{ inputs.package-directory }}
           repair-file: ${{ runner.temp }}/biome-repair.json
-      - uses: actions/upload-artifact@v7.0.1
+      - uses: actions/upload-artifact@v7.0.2
         if: steps.repair.outputs.changed == 'true'
         with:
           name: biome-repair-${{ github.run_id }}-${{ github.run_attempt }}
@@ -65,7 +65,7 @@ jobs:
       pull-requests: read
       actions: write
     steps:
-      - uses: actions/download-artifact@v8.0.1
+      - uses: actions/download-artifact@v8.0.2
         with:
           name: biome-repair-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/repair

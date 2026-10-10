@@ -40,7 +40,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2.2.0
         with:
           bun-version: 1.4.2
-      - uses: actions/setup-node@v7.0.0
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: 24.21.0
       - run: bun install --frozen-lockfile --ignore-scripts
@@ -48,7 +48,7 @@ jobs:
       - run: bun run validate:renovate
       - uses: actions/setup-go@v7.0.0
         with:
-          go-version: '1.27.1'
+          go-version: '1.27.2'
           cache: false
       - name: Validate workflows
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
